@@ -34,7 +34,7 @@ for f in files:
     rate, data = read(audio_file)
 
     y = data[..., 1]
-    x = np.arange(len(y))
+    x = np.arange(y.size)
     indexes = peakutils.indexes(y, thres=thres, min_dist=rate*min_time)
     diff = np.diff(indexes/rate)
 
