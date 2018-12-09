@@ -30,7 +30,7 @@ python taps.py -i file1.wav file2.wav
 Only processes `file1.wav` and `file2.wav`.
 
 ```bash
-python taps.py -i 'file3.wave' -a
+python taps.py -i file3.wav -a
 ```
 Append the results of `file3.wav` processing to the `output.csv` file instead of overwriting. Useful for processing files individually without losing all your work.
 
