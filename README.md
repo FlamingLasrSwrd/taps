@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ```
 
 # Use
-From the `taps.py` directory:
+From the `taps` directory:
 
 ```bash
 python taps.py
@@ -38,3 +38,10 @@ Append the results of `file3.wav` processing to the `output.csv` file instead of
 python taps.py -v
 ```
 Prints some information about the analysis of each file to the screen.
+
+# Testing
+A sample wave file is included for testing the installation:
+
+```bash
+python taps.py -i test/output.wav
+```
