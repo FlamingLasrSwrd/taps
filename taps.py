@@ -2,40 +2,60 @@ from scipy.io.wavfile import read
 import numpy as np
 import csv
 import peakutils
+import os
+import logging
 
-file_list = ['output.wav', 'output.wav']  # add input filenames here
-output_file = 'outfile.csv' # output filename
+from clargs import parser
+args = parser.parse_args()
 
+if args.verbose:
+    logging.basicConfig(level=logging.INFO)
+else:
+    logging.basicConfig(level=logging.ERROR)
+
+files = []
+if args.input:
+    [files.append(i) for i in args.input]
+else:
+    all_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    for f in all_files:
+        root, ext = os.path.splitext(f)
+        if ext == '.wav':
+            files.append(f)
 
 big_data = []
+for f in files:
+    audio_file = f
 
-for f in file_list:
-	audio_file = f
+    min_time = .1  # minimum time (s) between taps
 
-	min_time = .1  # minimum time (s) between taps
+    thres = 0.6  # threshold 0-1
 
-	thres = 0.6  # threshold 0-1
+    rate, data = read(audio_file)
 
-	rate, data = read(audio_file)
+    y = data[..., 1]
+    x = np.arange(len(y))
+    indexes = peakutils.indexes(y, thres=thres, min_dist=rate*min_time)
+    diff = np.diff(indexes/rate)
 
-#	plt.plot(data)
+# some basic info about each file
+    logging.info(f'For file: {f}')
+    logging.info(f'Time at each tap (s): {indexes/rate}')
+    logging.info(f'Time between taps (s): {diff}')
+    logging.info(
+        f'Average +- std. dev.(s): {np.mean(diff):.2} +- {np.std(diff):.2}')
 
-	y = data[...,1]
-	x = np.arange(len(y))
-	indexes = peakutils.indexes(y, thres=thres, min_dist=rate*min_time)
+    data = [f]
+    [data.append(d) for d in diff]
+    big_data.append(data)
 
-	print(f'For file: {f}')
-	print(f'Time at each tap (s): {indexes/rate}')
-	diff = np.diff(indexes/rate)
-	print(f'Time between taps (s): {diff}')
-	print(f'Average +- std. dev.(s): {np.mean(diff):.2} +- {np.std(diff):.2}')
-	print()
-	data = [f]
-	[data.append(d) for d in diff]
-	big_data.append(data)
-
-with open(output_file, 'w') as csv_file:
-	writer = csv.writer(csv_file)
-	writer.writerow(['filename', 'Time between taps in seconds'])
-	for d in big_data:
-		writer.writerow(d)
+if args.append:
+    type = 'a'
+else:
+    type = 'w'
+with open(args.out, type) as csv_file:
+    writer = csv.writer(csv_file)
+    if type is not 'a':
+        writer.writerow(['filename', 'Time between taps in seconds'])
+    for d in big_data:
+        writer.writerow(d)
